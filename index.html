@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Promptly AI</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#09090f;color:#fff;font-family:Arial,sans-serif}
+header{padding:18px 6%;border-bottom:1px solid #242432;background:#10101a}
+.logo{font-size:24px;font-weight:800;color:#a78bfa}.wrap{max-width:900px;margin:auto;padding:55px 18px}
+.hero{text-align:center}.hero h1{font-size:clamp(36px,8vw,64px);margin:0 0 15px}.hero h1 span{color:#8b5cf6}
+.hero p{color:#aaa;line-height:1.9}.box{margin-top:35px;background:#14141e;border:1px solid #2b2b3c;border-radius:20px;padding:20px}
+textarea{width:100%;min-height:160px;background:#0d0d15;color:#fff;border:1px solid #38384c;border-radius:14px;padding:15px;font-size:16px;outline:none;resize:vertical}
+button{border:0;border-radius:12px;padding:13px 20px;margin-top:14px;background:#7c3aed;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}.status{min-height:25px;margin-top:15px;color:#aaa}.result{display:none;margin-top:20px}
+.copy{background:#252536}footer{text-align:center;color:#666;margin-top:30px}
+</style>
+</head>
+<body>
+<header><div class="logo">⚡ Promptly AI</div></header>
+<main class="wrap">
+<section class="hero">
+<h1>ایده‌ات را به <span>پرامپت حرفه‌ای</span> تبدیل کن</h1>
+<p>ایده را بنویس؛ Promptly آن را برای استفاده در ابزارهای هوش مصنوعی بهینه می‌کند.</p>
+</section>
+<section class="box">
+<textarea id="idea" maxlength="6000" placeholder="مثلاً: یک پوستر سینمایی برای یک فیلم علمی‌تخیلی می‌خواهم..."></textarea>
+<button id="generate">✨ ساخت پرامپت</button>
+<div class="status" id="status"></div>
+<div class="result" id="result">
+<textarea id="output" readonly></textarea>
+<button class="copy" id="copy">📋 کپی پرامپت</button>
+</div>
+</section>
+<footer>Promptly © 2026</footer>
+</main>
+<script>
+const idea=document.querySelector("#idea"), generate=document.querySelector("#generate");
+const status=document.querySelector("#status"), result=document.querySelector("#result"), output=document.querySelector("#output");
+generate.onclick=async()=>{
+ const text=idea.value.trim();
+ if(!text){status.textContent="اول ایده‌ات را بنویس.";return}
+ generate.disabled=true;status.textContent="در حال ساخت پرامپت با هوش مصنوعی...";
+ result.style.display="none";
+ try{
+   const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({idea:text})});
+   const data=await r.json();
+   if(!r.ok) throw new Error(data.error||"خطا");
+   output.value=data.prompt;result.style.display="block";status.textContent="پرامپت آماده شد ✅";
+ }catch(e){status.textContent=e.message}
+ finally{generate.disabled=false}
+};
+document.querySelector("#copy").onclick=async()=>{
+ try{await navigator.clipboard.writeText(output.value)}catch{output.select();document.execCommand("copy")}
+ status.textContent="کپی شد ✅";
+};
+</script>
+</body>
+</html>
